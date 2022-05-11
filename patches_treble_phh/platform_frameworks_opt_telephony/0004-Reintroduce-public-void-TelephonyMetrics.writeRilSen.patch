@@ -1,4 +1,4 @@
-From 346ae5f3e226cb46c7e281d327785e2a600ea6f8 Mon Sep 17 00:00:00 2001
+From 65c519fb324d66c0cb984663d1e27a162a5dd827 Mon Sep 17 00:00:00 2001
 From: ironydelerium <42721860+ironydelerium@users.noreply.github.com>
 Date: Fri, 31 Dec 2021 02:20:28 -0800
 Subject: [PATCH 4/5] Reintroduce 'public void
@@ -13,16 +13,15 @@ in a MethodNotFoundException being raised in com.mediatek.ims, crashing it.
 Fixes https://github.com/phhusson/treble_experimentations/issues/2125.
 
 Co-authored-by: Sarah Vandomelen <sarah@sightworks.com>
-Change-Id: Ib7a3a41e049cb9c9f937e8c6f771a29495738223
 ---
  .../telephony/metrics/TelephonyMetrics.java         | 13 +++++++++++++
  1 file changed, 13 insertions(+)
 
 diff --git a/src/java/com/android/internal/telephony/metrics/TelephonyMetrics.java b/src/java/com/android/internal/telephony/metrics/TelephonyMetrics.java
-index 5e43876df8..c375d9c8b6 100644
+index 7028d95061..2f16a50750 100644
 --- a/src/java/com/android/internal/telephony/metrics/TelephonyMetrics.java
 +++ b/src/java/com/android/internal/telephony/metrics/TelephonyMetrics.java
-@@ -2311,6 +2311,19 @@ public class TelephonyMetrics {
+@@ -2317,6 +2317,19 @@ public class TelephonyMetrics {
          smsSession.increaseExpectedResponse();
      }
  
@@ -36,7 +35,7 @@ index 5e43876df8..c375d9c8b6 100644
 +     *         {@link SmsMessage#FORMAT_3GPP2}.
 +     */
 +    public void writeRilSendSms(int phoneId, int rilSerial, int tech, int format) {
-+        writeRilSendSms(phoneId, rilSerial, tech, format, 0);
++    	writeRilSendSms(phoneId, rilSerial, tech, format, 0);
 +    }
 +
      /**

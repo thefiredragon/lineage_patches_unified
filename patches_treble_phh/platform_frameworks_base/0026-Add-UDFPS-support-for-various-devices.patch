@@ -1,7 +1,7 @@
-From 7a65fc6e04b4dc686c67073eb73fe35a1c93ef90 Mon Sep 17 00:00:00 2001
+From 7beea169b6a5e44320edfc0ad70abfb2a652f2ff Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Sun, 19 Dec 2021 17:08:22 -0500
-Subject: [PATCH 25/31] Add UDFPS support for various devices
+Subject: [PATCH 26/34] Add UDFPS support for various devices
 
 Successfully tested on Galaxy A51, Xiaomi Mi 9, and OnePlus Nord 2
 
@@ -13,11 +13,11 @@ Successfully tested on Galaxy A51, Xiaomi Mi 9, and OnePlus Nord 2
 Change-Id: I9448f06a46c178652f5b216717d914b8db55c993
 ---
  .../systemui/biometrics/UdfpsSurfaceView.java |   2 +-
- .../systemui/biometrics/UdfpsView.java        |  54 +++-
+ .../systemui/biometrics/UdfpsView.java        |  60 +++-
  services/core/Android.bp                      |   4 +
  .../server/biometrics/AuthService.java        | 262 +++++++++++++++++-
  .../sensors/fingerprint/UdfpsHelper.java      | 115 +++++++-
- 5 files changed, 419 insertions(+), 18 deletions(-)
+ 5 files changed, 423 insertions(+), 20 deletions(-)
 
 diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsSurfaceView.java b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsSurfaceView.java
 index 77fad35d32d4..51409b9c533a 100644
@@ -33,7 +33,7 @@ index 77fad35d32d4..51409b9c533a 100644
      }
  
 diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsView.java b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsView.java
-index 30e5aed2f8d8..7b8a5995f26c 100644
+index 6d31ef0e7701..dd5da24a87bf 100644
 --- a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsView.java
 +++ b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsView.java
 @@ -42,6 +42,12 @@ import com.android.systemui.R;
@@ -108,21 +108,40 @@ index 30e5aed2f8d8..7b8a5995f26c 100644
      public UdfpsView(Context context, AttributeSet attrs) {
          super(context, attrs);
  
-@@ -255,6 +304,9 @@ public class UdfpsView extends FrameLayout implements DozeReceiver, UdfpsIllumin
-                 }
-             });
+@@ -241,7 +290,7 @@ public class UdfpsView extends FrameLayout implements DozeReceiver, UdfpsIllumin
+         if (mGhbmView != null && surface == null) {
+             Log.e(TAG, "doIlluminate | surface must be non-null for GHBM");
          }
-+        else if (mGhbmView != null) {
-+            mGhbmView.drawIlluminationDot(mSensorRect);
-+        }
+-        mHbmProvider.enableHbm(mHbmType, surface, () -> {
++        if(mHbmProvider != null) mHbmProvider.enableHbm(mHbmType, surface, () -> {
+             if (mGhbmView != null) {
+                 mGhbmView.drawIlluminationDot(mSensorRect);
+             }
+@@ -253,6 +302,11 @@ public class UdfpsView extends FrameLayout implements DozeReceiver, UdfpsIllumin
+                 Log.w(TAG, "doIlluminate | onIlluminatedRunnable is null");
+             }
+         });
++	else {
++		if (mGhbmView != null) {
++			mGhbmView.drawIlluminationDot(mSensorRect);
++		}
++	}
      }
  
      @Override
+@@ -265,6 +319,6 @@ public class UdfpsView extends FrameLayout implements DozeReceiver, UdfpsIllumin
+             mGhbmView.setGhbmIlluminationListener(null);
+             mGhbmView.setVisibility(View.INVISIBLE);
+         }
+-        mHbmProvider.disableHbm(null /* onHbmDisabled */);
++        if(mHbmProvider != null) mHbmProvider.disableHbm(null /* onHbmDisabled */);
+     }
+ }
 diff --git a/services/core/Android.bp b/services/core/Android.bp
-index 1893b24c2501..2f5594b4869d 100644
+index e5716eee467e..9c359cea6244 100644
 --- a/services/core/Android.bp
 +++ b/services/core/Android.bp
-@@ -156,6 +156,10 @@ java_library_static {
+@@ -155,6 +155,10 @@ java_library_static {
          "android.hardware.soundtrigger-V2.3-java",
          "android.hardware.power.stats-V1-java",
          "android.hidl.manager-V1.2-java",
@@ -134,10 +153,10 @@ index 1893b24c2501..2f5594b4869d 100644
          "icu4j_calendar_astronomer",
          "netd-client",
 diff --git a/services/core/java/com/android/server/biometrics/AuthService.java b/services/core/java/com/android/server/biometrics/AuthService.java
-index 16a4e106a2e2..341b08262ed4 100644
+index 9c8ccd946b7f..62ea6dd8633b 100644
 --- a/services/core/java/com/android/server/biometrics/AuthService.java
 +++ b/services/core/java/com/android/server/biometrics/AuthService.java
-@@ -75,6 +75,21 @@ import com.android.server.SystemService;
+@@ -73,6 +73,21 @@ import com.android.server.SystemService;
  import java.util.ArrayList;
  import java.util.List;
  
@@ -159,7 +178,7 @@ index 16a4e106a2e2..341b08262ed4 100644
  /**
   * System service that provides an interface for authenticating with biometrics and
   * PIN/pattern/password to BiometricPrompt and lock screen.
-@@ -91,6 +106,9 @@ public class AuthService extends SystemService {
+@@ -89,6 +104,9 @@ public class AuthService extends SystemService {
      @VisibleForTesting
      final IAuthService.Stub mImpl;
  
@@ -169,7 +188,7 @@ index 16a4e106a2e2..341b08262ed4 100644
      /**
       * Class for injecting dependencies into AuthService.
       * TODO(b/141025588): Replace with a dependency injection framework (e.g. Guice, Dagger).
-@@ -639,6 +657,68 @@ public class AuthService extends SystemService {
+@@ -637,6 +655,68 @@ public class AuthService extends SystemService {
          registerAuthenticators(hidlConfigs);
  
          mInjector.publishBinderService(this, mImpl);
@@ -238,7 +257,7 @@ index 16a4e106a2e2..341b08262ed4 100644
      }
  
      /**
-@@ -737,23 +817,201 @@ public class AuthService extends SystemService {
+@@ -735,19 +815,197 @@ public class AuthService extends SystemService {
                  ? modality : (modality & ~BiometricAuthenticator.TYPE_CREDENTIAL);
      }
  
@@ -311,10 +330,6 @@ index 16a4e106a2e2..341b08262ed4 100644
 -        final int[] udfpsProps = getContext().getResources().getIntArray(
 +        int[] udfpsProps = getContext().getResources().getIntArray(
                  com.android.internal.R.array.config_udfps_sensor_props);
- 
-         // Non-empty workaroundLocations indicates that the sensor is SFPS.
-         final List<SensorLocationInternal> workaroundLocations =
-                 getWorkaroundSensorProps(getContext());
  
 -        final boolean isUdfps = !ArrayUtils.isEmpty(udfpsProps);
 +        boolean isUdfps = !ArrayUtils.isEmpty(udfpsProps);

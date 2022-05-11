@@ -1,7 +1,7 @@
-From 031c6f960ea02acf8e43779c8f7e19d2c6ccad15 Mon Sep 17 00:00:00 2001
+From 0f58fd9defa9741053b713c565d2a1daac5761da Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Sat, 13 Mar 2021 14:20:03 -0500
-Subject: [PATCH 11/21] Support Samsung R multi-cams
+Subject: [PATCH 11/23] Support Samsung R multi-cams
 
 Change-Id: If46f385e8dd16185cbf37ab083e6a1242e1d1555
 ---
@@ -22,7 +22,7 @@ index e940c33845..a2a2ad623e 100644
      ],
  
 diff --git a/services/camera/libcameraservice/common/CameraProviderManager.cpp b/services/camera/libcameraservice/common/CameraProviderManager.cpp
-index 5158655d33..c873989b08 100644
+index 015aa12cfa..75004be52c 100644
 --- a/services/camera/libcameraservice/common/CameraProviderManager.cpp
 +++ b/services/camera/libcameraservice/common/CameraProviderManager.cpp
 @@ -22,6 +22,7 @@

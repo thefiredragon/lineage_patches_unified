@@ -1,7 +1,7 @@
-From 250a08142fc0bbe96622346f12dafb003fc10123 Mon Sep 17 00:00:00 2001
+From 61761d2993d53566f75e55e79fb4f4a300d60249 Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Thu, 3 Mar 2022 09:15:32 -0500
-Subject: [PATCH 28/31] Add persist.sys.phh.ultrasonic_udfps property to
+Subject: [PATCH 29/34] Add persist.sys.phh.ultrasonic_udfps property to
  disable green circle for udfps
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 28/31] Add persist.sys.phh.ultrasonic_udfps property to
  1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/services/core/java/com/android/server/biometrics/AuthService.java b/services/core/java/com/android/server/biometrics/AuthService.java
-index 341b08262ed4..718dbf85bdcd 100644
+index 62ea6dd8633b..28d538c1dca2 100644
 --- a/services/core/java/com/android/server/biometrics/AuthService.java
 +++ b/services/core/java/com/android/server/biometrics/AuthService.java
-@@ -1008,13 +1008,17 @@ public class AuthService extends SystemService {
+@@ -1002,13 +1002,17 @@ public class AuthService extends SystemService {
              isUdfps = true;
          }
  
