@@ -1,7 +1,7 @@
-From e29f09e2fb842574cf985b679cf044bf9fe4e682 Mon Sep 17 00:00:00 2001
+From 0e304464a29e1905e64bceb63638b1a946d80720 Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Sun, 5 Apr 2020 16:32:46 +0200
-Subject: [PATCH 08/34] Always allow overriding the number of work profiles
+Subject: [PATCH 08/33] Always allow overriding the number of work profiles
 
 Change-Id: I6eb09aa71663c6fbe7563e3038bffcabdba0ff6a
 ---
@@ -9,10 +9,10 @@ Change-Id: I6eb09aa71663c6fbe7563e3038bffcabdba0ff6a
  1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/services/core/java/com/android/server/pm/UserManagerService.java b/services/core/java/com/android/server/pm/UserManagerService.java
-index 6d8137e74061..d2137d17b414 100644
+index 826370006dca..925ab6e6b77f 100644
 --- a/services/core/java/com/android/server/pm/UserManagerService.java
 +++ b/services/core/java/com/android/server/pm/UserManagerService.java
-@@ -5823,12 +5823,8 @@ public class UserManagerService extends IUserManager.Stub {
+@@ -5825,12 +5825,8 @@ public class UserManagerService extends IUserManager.Stub {
       */
      private static int getMaxUsersOfTypePerParent(UserTypeDetails userTypeDetails) {
          final int defaultMax = userTypeDetails.getMaxAllowedPerParent();
